@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repair Windows Computer Use"
+  short_description: "Diagnose and repair recurring Computer Use failures"
+  default_prompt: "Use $repair-computer-use-windows to diagnose and repair Windows Codex Computer Use."
