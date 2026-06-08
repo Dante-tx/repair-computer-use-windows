@@ -83,7 +83,7 @@ missing plugin manifest: ...\.codex\.tmp\bundled-marketplaces\openai-bundled\plu
 
 Treat a missing `browser` or `chrome` manifest in the mutable bundled marketplace as another symptom of mirror damage. Continue checking the filtered Desktop logs for `EBUSY`, `missing-helper-path`, and native pipe startup failures before deciding the cause is unrelated.
 
-If Computer Use works immediately after repair but becomes unavailable after restarting Codex Desktop, check `[marketplaces.openai-bundled].source`. A source under `.codex\.tmp\bundled-marketplaces\openai-bundled` can reproduce the same startup sequence:
+If Computer Use works immediately after repair but becomes unavailable after restarting Codex Desktop, check both the mutable marketplace and the stable cache paths:
 
 ```text
 startup ready
@@ -92,7 +92,9 @@ startup ready
 -> missing-helper-path
 ```
 
-In that case, the persistent fix is to point the local `openai-bundled` marketplace at a non-`.tmp` stable mirror, not just to repoint plugin cache `latest` junctions.
+Do not point `[marketplaces.openai-bundled].source` at a different non-`.tmp` mirror. Codex Desktop registers its runtime bundled marketplace from `.codex\.tmp\bundled-marketplaces\openai-bundled`; using a different source for the same marketplace name can make Desktop log `marketplace 'openai-bundled' is already added from a different source` and then uninstall `browser@openai-bundled` with `reason=not_in_bundled_marketplace_plugin_names`.
+
+The repair should keep `[marketplaces.openai-bundled].source` on Desktop's `.tmp` bundled marketplace while repointing plugin cache `latest` junctions and Chrome Native Messaging to stable versioned cache paths.
 
 ### 3. Repair
 
@@ -105,8 +107,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-root>\scripts\repair
 The script repairs automatically when verification fails. It:
 
 - Stops bundled `extension-host` lock holders.
-- Rebuilds a stable non-`.tmp` `openai-bundled` mirror from the current Codex package.
-- Points `[marketplaces.openai-bundled].source` at the stable mirror.
+- Rebuilds Desktop's `.tmp` `openai-bundled` mirror from the current Codex package.
+- Points `[marketplaces.openai-bundled].source` at that `.tmp` bundled marketplace.
 - Copies `browser` and `chrome` into stable versioned cache directories.
 - Repoints their `latest` junctions to stable directories.
 - Rewrites the Chrome Native Messaging manifest to a stable versioned host path.
@@ -123,8 +125,9 @@ Confirm without printing unrelated configuration:
 - Its first three bytes are not `EF-BB-BF`.
 - `[features] computer_use = true`.
 - `[plugins."computer-use@openai-bundled"] enabled = true`.
+- `[plugins."browser@openai-bundled"] enabled = true`.
 - `CODEX_ELECTRON_ENABLE_WINDOWS_COMPUTER_USE=1` exists for the current user.
-- `[marketplaces.openai-bundled].source` points to a stable non-`.tmp` mirror such as `.codex\plugins\marketplaces\openai-bundled-stable`.
+- `[marketplaces.openai-bundled].source` points to `.codex\.tmp\bundled-marketplaces\openai-bundled`, matching Desktop's runtime bundled marketplace source.
 - `browser/latest`, `chrome/latest`, and `computer-use/latest` target versioned caches, not `.tmp`.
 - Native Messaging points to `chrome\<version>\extension-host\...`, not `chrome\latest` or `.tmp`.
 

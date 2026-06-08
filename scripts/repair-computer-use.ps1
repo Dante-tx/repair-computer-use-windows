@@ -81,7 +81,7 @@ function Resolve-ExistingDirectory {
 
 function Get-LocalBundledMarketplaceRoot {
   param([string]$CodexHomeResolved)
-  return Join-Path $CodexHomeResolved 'plugins\marketplaces\openai-bundled-stable'
+  return Join-Path $CodexHomeResolved '.tmp\bundled-marketplaces\openai-bundled'
 }
 
 function Assert-UnderPath {
@@ -576,6 +576,9 @@ function Update-CodexConfig {
   Set-TomlTable $configPath '[plugins."computer-use@openai-bundled"]' @{
     enabled = $true
   }
+  Set-TomlTable $configPath '[plugins."browser@openai-bundled"]' @{
+    enabled = $true
+  }
   Set-TomlTable $configPath '[windows]' @{
     sandbox = 'unelevated'
   }
@@ -877,6 +880,9 @@ function Test-CodexConfig {
     if ($content -notmatch '(?ms)^\[plugins\."computer-use@openai-bundled"\]\s*\r?\n(?:(?!^\[).)*enabled\s*=\s*true') {
       throw 'config.toml is missing plugins."computer-use@openai-bundled".enabled=true'
     }
+    if ($content -notmatch '(?ms)^\[plugins\."browser@openai-bundled"\]\s*\r?\n(?:(?!^\[).)*enabled\s*=\s*true') {
+      throw 'config.toml is missing plugins."browser@openai-bundled".enabled=true'
+    }
     if ($content -notmatch '(?ms)^\[windows\]\s*\r?\n(?:(?!^\[).)*sandbox\s*=\s*[''"]unelevated[''"]') {
       throw 'config.toml is missing windows.sandbox=unelevated'
     }
@@ -908,6 +914,12 @@ if not isinstance(plugin, dict):
     errors.append('missing [plugins."computer-use@openai-bundled"]')
 elif plugin.get("enabled") is not True:
     errors.append('plugins."computer-use@openai-bundled".enabled must be true')
+
+browser_plugin = data.get("plugins", {}).get("browser@openai-bundled")
+if not isinstance(browser_plugin, dict):
+    errors.append('missing [plugins."browser@openai-bundled"]')
+elif browser_plugin.get("enabled") is not True:
+    errors.append('plugins."browser@openai-bundled".enabled must be true')
 
 windows = data.get("windows", {})
 if not isinstance(windows, dict):
