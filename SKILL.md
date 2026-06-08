@@ -188,6 +188,8 @@ Then import the absolute Computer Use client path and call `sky.list_apps()`.
 
 If the current `node_repl` host started before repair, `js_reset` does not refresh native-pipe injection. If strict verification and Desktop `startup ready` both succeed, a missing `nodeRepl.nativePipe` in that old process means a new session is required for runtime verification; do not repeat repair solely because of the old process state. Trust `startup ready` plus strict helper verification, then verify `sky.list_apps()` in a new session or after Codex restarts.
 
+The same runtime limitation applies to Browser plugin tools. After the repair restores `browser/latest` and enables `browser@openai-bundled`, the current Codex session may still lack Browser tools because plugin discovery already ran. Restart Codex once so plugin discovery runs against the repaired filesystem state.
+
 ## Report
 
 Report in Chinese:
