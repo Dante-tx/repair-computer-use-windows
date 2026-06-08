@@ -96,6 +96,17 @@ Do not point `[marketplaces.openai-bundled].source` at a different non-`.tmp` mi
 
 The repair should keep `[marketplaces.openai-bundled].source` on Desktop's `.tmp` bundled marketplace while repointing plugin cache `latest` junctions and Chrome Native Messaging to stable versioned cache paths.
 
+Browser can also become unavailable when startup reconciliation first writes a partial bundled marketplace, for example:
+
+```text
+bundled_plugins_runtime_marketplace_written pluginCount=2 pluginNames=["computer-use","latex"]
+bundled_plugin_uninstall_requested pluginId=browser@openai-bundled reason=not_in_bundled_marketplace_plugin_names
+...
+bundled_plugins_runtime_marketplace_written pluginCount=4 pluginNames=["browser","chrome","computer-use","latex"]
+```
+
+In this case the later marketplace is correct, but the early uninstall may already have removed `browser/latest` or repointed `chrome/latest` back into `.tmp`. Repair by rebuilding the bundled mirror, restoring `browser/latest`, `chrome/latest`, and `computer-use/latest` to stable cache targets, and ensuring `[plugins."browser@openai-bundled"] enabled = true`.
+
 ### 3. Repair
 
 Run:
@@ -113,6 +124,7 @@ The script repairs automatically when verification fails. It:
 - Repoints their `latest` junctions to stable directories.
 - Rewrites the Chrome Native Messaging manifest to a stable versioned host path.
 - Installs the local Computer Use compatibility plugin.
+- Enables `browser@openai-bundled` so the Browser settings UI does not remain at Install after repair.
 - Enables the current-user Computer Use environment gate.
 - Backs up `config.toml` before writes.
 - Tests helper transport with a screenshot request.
@@ -130,6 +142,7 @@ Confirm without printing unrelated configuration:
 - `[marketplaces.openai-bundled].source` points to `.codex\.tmp\bundled-marketplaces\openai-bundled`, matching Desktop's runtime bundled marketplace source.
 - `browser/latest`, `chrome/latest`, and `computer-use/latest` target versioned caches, not `.tmp`.
 - Native Messaging points to `chrome\<version>\extension-host\...`, not `chrome\latest` or `.tmp`.
+- The current `.tmp` bundled marketplace manifest contains `browser`, `chrome`, and `computer-use`.
 
 Even when the repair script reports `verification ok`, independently verify `[features] computer_use = true` and the current-user environment gate. If `[features] computer_use = true` is missing, back up `config.toml` and add only that key under `[features]`, preserving UTF-8 without BOM.
 

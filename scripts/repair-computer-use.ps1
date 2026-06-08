@@ -1089,6 +1089,12 @@ function Test-ComputerUse {
   }
 
   $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
+  foreach ($requiredBundledPlugin in @('browser', 'chrome', 'computer-use')) {
+    $requiredEntry = @($manifest.plugins | Where-Object { $_.name -eq $requiredBundledPlugin }) | Select-Object -First 1
+    if (-not $requiredEntry) {
+      throw "openai-bundled marketplace manifest is missing required plugin: $requiredBundledPlugin"
+    }
+  }
   $entry = @($manifest.plugins | Where-Object { $_.name -eq 'computer-use' }) | Select-Object -First 1
   if (-not $entry) {
     throw 'computer-use is missing from openai-bundled marketplace manifest'
