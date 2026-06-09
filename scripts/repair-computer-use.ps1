@@ -579,6 +579,9 @@ function Update-CodexConfig {
   Set-TomlTable $configPath '[plugins."browser@openai-bundled"]' @{
     enabled = $true
   }
+  Set-TomlTable $configPath '[plugins."chrome@openai-bundled"]' @{
+    enabled = $true
+  }
   Set-TomlTable $configPath '[windows]' @{
     sandbox = 'unelevated'
   }
@@ -883,6 +886,9 @@ function Test-CodexConfig {
     if ($content -notmatch '(?ms)^\[plugins\."browser@openai-bundled"\]\s*\r?\n(?:(?!^\[).)*enabled\s*=\s*true') {
       throw 'config.toml is missing plugins."browser@openai-bundled".enabled=true'
     }
+    if ($content -notmatch '(?ms)^\[plugins\."chrome@openai-bundled"\]\s*\r?\n(?:(?!^\[).)*enabled\s*=\s*true') {
+      throw 'config.toml is missing plugins."chrome@openai-bundled".enabled=true'
+    }
     if ($content -notmatch '(?ms)^\[windows\]\s*\r?\n(?:(?!^\[).)*sandbox\s*=\s*[''"]unelevated[''"]') {
       throw 'config.toml is missing windows.sandbox=unelevated'
     }
@@ -920,6 +926,12 @@ if not isinstance(browser_plugin, dict):
     errors.append('missing [plugins."browser@openai-bundled"]')
 elif browser_plugin.get("enabled") is not True:
     errors.append('plugins."browser@openai-bundled".enabled must be true')
+
+chrome_plugin = data.get("plugins", {}).get("chrome@openai-bundled")
+if not isinstance(chrome_plugin, dict):
+    errors.append('missing [plugins."chrome@openai-bundled"]')
+elif chrome_plugin.get("enabled") is not True:
+    errors.append('plugins."chrome@openai-bundled".enabled must be true')
 
 windows = data.get("windows", {})
 if not isinstance(windows, dict):
